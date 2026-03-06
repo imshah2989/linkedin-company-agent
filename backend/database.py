@@ -315,6 +315,21 @@ class GoogleSheetsDB:
         sorted_recs = sorted(recs, key=lambda x: int(x.get('id', 0)) if str(x.get('id','')).isdigit() else 0, reverse=True)
         return sorted_recs[:limit]
 
+    def get_all_campaigns(self):
+        """List all unique campaign names based on sheet prefixes."""
+        try:
+            worksheets = self.db.worksheets()
+            campaigns = set(["Default"])
+            for ws in worksheets:
+                title = ws.title
+                if title.startswith("[") and "]" in title:
+                    campaign = title[1:title.find("]")]
+                    campaigns.add(campaign)
+            return sorted(list(campaigns))
+        except Exception as e:
+            print(f"⚠️ Error listing campaigns: {e}")
+            return ["Default"]
+
 
 # ── Local DB Implementation ───────────────────────────────────────────
 class LocalDB:
@@ -413,6 +428,11 @@ class LocalDB:
     def add_search_history(self, query, filters, result_count):
         self.data["SearchHistory"].append({"id": str(self._next_id("SearchHistory")), "query": query, "filters": filters, "result_count": result_count, "created_at": datetime.now(timezone.utc).isoformat()}); self._save()
     def get_search_history(self, limit=20): return sorted(self.data["SearchHistory"], key=lambda x: int(x.get('id', 0)), reverse=True)[:limit]
+    def get_all_campaigns(self):
+        campaigns = set(["Default"])
+        for r in self.data["Companies"]:
+            campaigns.add(r.get("campaign", "Default"))
+        return sorted(list(campaigns))
 
 from config import GOOGLE_SHEET_ID, GOOGLE_SERVICE_ACCOUNT_FILE, GOOGLE_SERVICE_ACCOUNT_JSON
 
@@ -468,3 +488,4 @@ def get_messages(lead_id, campaign="Default"): return _db().get_messages(lead_id
 def update_message(id, data, campaign="Default"): return _db().update_message(id, data, campaign)
 def add_search_history(query, filters, result_count): return _db().add_search_history(query, filters, result_count)
 def get_search_history(limit=20): return _db().get_search_history(limit)
+def get_all_campaigns(): return _db().get_all_campaigns()

@@ -13,12 +13,21 @@ const PIPELINE_STAGES = [
 ];
 
 export default function Leads() {
-    const { campaign } = useCampaign();
+    const { campaign, setCampaign } = useCampaign();
     const [leads, setLeads] = useState([]);
+    const [campaigns, setCampaigns] = useState(['Default']);
     const [loading, setLoading] = useState(true);
     const [toast, setToast] = useState(null);
 
     useEffect(() => { loadLeads(); }, [campaign]);
+    useEffect(() => { loadCampaigns(); }, []);
+
+    async function loadCampaigns() {
+        try {
+            const data = await api.getCampaigns();
+            if (data.campaigns) setCampaigns(data.campaigns);
+        } catch (e) { console.error(e); }
+    }
 
     function showToast(msg, type = 'success') {
         setToast({ msg, type });
@@ -64,10 +73,21 @@ export default function Leads() {
     return (
         <div>
             <div className="page-header">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
                         <h2>🎯 Lead Pipeline</h2>
-                        <p>{leads.length} total leads across all stages</p>
+                        <p>{leads.length} leads in <strong>{campaign}</strong></p>
+                    </div>
+                    <div className="input-group" style={{ width: '200px', marginBottom: 0 }}>
+                        <label style={{ fontSize: '0.7rem' }}>Switch Campaign</label>
+                        <select
+                            className="input-field"
+                            value={campaign}
+                            onChange={(e) => setCampaign(e.target.value)}
+                            style={{ padding: '8px 12px' }}
+                        >
+                            {campaigns.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
                     </div>
                 </div>
             </div>

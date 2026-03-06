@@ -65,4 +65,6 @@ export const api = {
     request(`/api/messages/${leadId}?campaign=${encodeURIComponent(campaign)}`),
   updateMessage: (id, data, campaign = 'Default') =>
     request(`/api/messages/${id}?campaign=${encodeURIComponent(campaign)}`, { method: 'PATCH', body: data }),
+  getCampaigns: () =>
+    request('/api/campaigns'),
 };

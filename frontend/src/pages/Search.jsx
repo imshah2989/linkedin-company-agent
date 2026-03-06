@@ -3,12 +3,13 @@ import { api } from '../api';
 import { useCampaign } from '../context/CampaignContext';
 
 export default function Search() {
-    const { campaign } = useCampaign();
+    const { setCampaign } = useCampaign();
     const [filters, setFilters] = useState({
         industry: '',
         location: '',
         company_size: '',
         keywords: '',
+        campaign: localStorage.getItem('activeCampaign') || 'Default',
         max_results: 10,
     });
     const [results, setResults] = useState([]);
@@ -30,7 +31,8 @@ export default function Search() {
         setError('');
         setResults([]);
         try {
-            const data = await api.searchCompanies({ ...filters, campaign });
+            setCampaign(filters.campaign);
+            const data = await api.searchCompanies(filters);
             setResults(data.companies || []);
             if (data.companies?.length === 0) setError('No companies found. Try broader search terms.');
         } catch (e) {
@@ -117,6 +119,16 @@ export default function Search() {
                             placeholder="e.g., hiring, AI automation"
                             value={filters.keywords}
                             onChange={(e) => setFilters({ ...filters, keywords: e.target.value })}
+                        />
+                    </div>
+                    <div className="input-group">
+                        <label>Campaign Name</label>
+                        <input
+                            className="input-field"
+                            placeholder="e.g., AI Startups"
+                            value={filters.campaign}
+                            onChange={(e) => setFilters({ ...filters, campaign: e.target.value })}
+                            style={{ borderLeft: '3px solid var(--text-accent)' }}
                         />
                     </div>
                 </div>

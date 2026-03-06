@@ -62,6 +62,11 @@ async def root():
     }
 
 
+@app.get("/api/campaigns")
+async def get_campaigns():
+    from database import get_all_campaigns
+    return {"campaigns": get_all_campaigns()}
+
 @app.get("/health")
 async def health():
     return {"status": "healthy"}
