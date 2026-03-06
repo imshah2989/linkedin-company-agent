@@ -3,15 +3,15 @@ import { api } from '../api';
 import { useCampaign } from '../context/CampaignContext';
 
 export default function Search() {
-    const { setCampaign } = useCampaign();
+    const { campaign, setCampaign } = useCampaign();
     const [filters, setFilters] = useState({
         industry: '',
         location: '',
         company_size: '',
         keywords: '',
-        campaign: localStorage.getItem('activeCampaign') || 'Default',
         max_results: 10,
     });
+    const [campaigns, setCampaigns] = useState(['Default']);
     const [results, setResults] = useState([]);
     const [searching, setSearching] = useState(false);
     const [error, setError] = useState('');
@@ -19,6 +19,28 @@ export default function Search() {
     const [decisionMakers, setDecisionMakers] = useState([]);
     const [findingDMs, setFindingDMs] = useState(false);
     const [toast, setToast] = useState(null);
+
+    useState(() => {
+        loadCampaigns();
+    }, []);
+
+    async function loadCampaigns() {
+        try {
+            const data = await api.getCampaigns();
+            if (data.campaigns) setCampaigns(data.campaigns);
+        } catch (e) { console.error(e); }
+    }
+
+    function handleNewCampaign() {
+        const name = prompt("Enter new campaign name:");
+        if (name && name.trim()) {
+            const cleanName = name.trim();
+            setCampaign(cleanName);
+            if (!campaigns.includes(cleanName)) {
+                setCampaigns(prev => [...prev, cleanName].sort());
+            }
+        }
+    }
 
     function showToast(msg, type = 'success') {
         setToast({ msg, type });
@@ -31,8 +53,7 @@ export default function Search() {
         setError('');
         setResults([]);
         try {
-            setCampaign(filters.campaign);
-            const data = await api.searchCompanies(filters);
+            const data = await api.searchCompanies({ ...filters, campaign });
             setResults(data.companies || []);
             if (data.companies?.length === 0) setError('No companies found. Try broader search terms.');
         } catch (e) {
@@ -71,9 +92,25 @@ export default function Search() {
 
     return (
         <div>
-            <div className="page-header">
-                <h2>🔍 Search Companies</h2>
-                <p>Use Google X-ray search to discover companies on LinkedIn</p>
+            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                    <h2>🔍 Search Companies</h2>
+                    <p>Use Google X-ray search to discover companies on LinkedIn</p>
+                </div>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end' }}>
+                    <div className="input-group" style={{ width: '180px', marginBottom: 0 }}>
+                        <label style={{ fontSize: '0.7rem' }}>Active Campaign</label>
+                        <select
+                            className="input-field"
+                            value={campaign}
+                            onChange={(e) => setCampaign(e.target.value)}
+                            style={{ padding: '8px 12px' }}
+                        >
+                            {campaigns.map(c => <option key={c} value={c}>{c}</option>)}
+                        </select>
+                    </div>
+                    <button className="btn btn-secondary btn-icon" onClick={handleNewCampaign} title="New Campaign" style={{ height: '38px', width: '38px' }}>+</button>
+                </div>
             </div>
 
             {/* Search Form */}
@@ -119,16 +156,6 @@ export default function Search() {
                             placeholder="e.g., hiring, AI automation"
                             value={filters.keywords}
                             onChange={(e) => setFilters({ ...filters, keywords: e.target.value })}
-                        />
-                    </div>
-                    <div className="input-group">
-                        <label>Campaign Name</label>
-                        <input
-                            className="input-field"
-                            placeholder="e.g., AI Startups"
-                            value={filters.campaign}
-                            onChange={(e) => setFilters({ ...filters, campaign: e.target.value })}
-                            style={{ borderLeft: '3px solid var(--text-accent)' }}
                         />
                     </div>
                 </div>
