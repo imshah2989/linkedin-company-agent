@@ -1,0 +1,26 @@
+# System files
+.DS_Store
+Thumbs.db
+
+# Backend ignores
+backend/__pycache__/
+backend/*.py[cod]
+backend/*$py.class
+backend/.env
+backend/service_account.json
+backend/data.json
+backend/.git/
+
+# Frontend ignores
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+frontend/*.local
+frontend/.vercel/
+frontend/.git/
+
+# Top level ignores
+.git/
+.vscode/
+.idea/
+*.log
