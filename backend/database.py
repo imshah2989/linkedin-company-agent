@@ -298,7 +298,8 @@ class GoogleSheetsDB:
         return None
 
     def add_search_history(self, query, filters, result_count):
-        sheet = self.db.worksheet("SearchHistory")
+        sh_headers = ["id", "query", "filters", "result_count", "created_at"]
+        sheet = self._get_sheet("SearchHistory", sh_headers, "Default")
         new_id = str(self._next_id(sheet))
         now = datetime.now(timezone.utc).isoformat()
         
@@ -306,7 +307,8 @@ class GoogleSheetsDB:
         sheet.append_row(row)
 
     def get_search_history(self, limit=20):
-        recs = self.db.worksheet("SearchHistory").get_all_records()
+        sh_headers = ["id", "query", "filters", "result_count", "created_at"]
+        recs = self._get_sheet("SearchHistory", sh_headers, "Default").get_all_records()
         for r in recs:
             if isinstance(r.get("filters"), str):
                 try: r["filters"] = json.loads(r["filters"])
@@ -422,7 +424,7 @@ class LocalDB:
         for r in self.data["Messages"]:
             if str(r['id']) == str(id):
                 if "status" in data: r["status"] = data["status"]
-                if "notes" in data: r["notes"] = data["notes"]
+                if "content" in data: r["content"] = data["content"]
                 self._save(); return r
         return None
     def add_search_history(self, query, filters, result_count):

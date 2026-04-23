@@ -121,7 +121,7 @@ async def generate_message(
 
     try:
         response = client.chat.completions.create(
-            model="llama-4-scout-17b-16e-instruct",
+            model="llama3.1-8b",
             messages=[
                 {"role": "system", "content": "You are a professional B2B outreach message writer. Write concise, personalized messages."},
                 {"role": "user", "content": prompt},
